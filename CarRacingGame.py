@@ -197,21 +197,21 @@ def check_power_up_collection(player_position, player_name):
 def draw_debuffs():
     global debuffs
     glColor3f(1, 1, 1)
-    for x, y in debuffs:
+    for x, y, _ in debuffs:
         draw_circle_midpoint(x, y, 5)
-def spawn_debuff(car_position):
+def spawn_debuff(car_position, player_name):
     global debuffs
-    debuffs.append((car_position[0] + random.randint(-20, 20), car_position[1] + random.randint(-20, 20)))
+    debuffs.append((car_position[0] + random.randint(-20, 20), car_position[1] + random.randint(-20, 20), player_name))
 
 def check_debuff(player_position, player_name):
     global debuff_times, player1_speed, player2_speed, debuffs
     current_time = time.time()
     
 
-    for (x, y) in debuffs:
+    for (x, y, creator) in debuffs:
         distance = math.sqrt((player_position[0] - x) ** 2 + (player_position[1] - y) ** 2)
-        if distance < 10:
-            debuffs.remove((x, y))
+        if distance < 10 and creator != player_name:
+            debuffs.remove((x, y, creator))
             debuff_times[player_name] = current_time
             if player_name == "player1":
                 player1_speed = player1_original_speed / 2 
@@ -320,7 +320,7 @@ def update_player():
         if keys.get(b't'): 
             teleport_player("player1")
         if keys.get(b'f', False) and not player1_debuff:
-            spawn_debuff(player1_position)
+            spawn_debuff(player1_position, "player1")
             player1_debuff = True
         elif not keys.get(b'f', False):
             player1_debuff = False
@@ -339,7 +339,7 @@ def update_player():
         if keys.get(GLUT_KEY_RIGHT):
             player2_angle -= 5
         if keys.get(b'n', False) and not player2_debuff:
-            spawn_debuff(player2_position)
+            spawn_debuff(player2_position, "player2")
             player2_debuff = True
         if keys.get(b'm'): 
             teleport_player("player2")
