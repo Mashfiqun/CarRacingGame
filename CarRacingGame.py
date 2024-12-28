@@ -53,7 +53,7 @@ OBSTACLE_INTERVAL = 3000
 OBSTACLE_LIFETIME = 5000
 SPEED_PENALTY = 1.0
 
-TELEPORTATION_COOLDOWN = 8000
+TELEPORTATION_COOLDOWN = 15
 teleportation_available = {"player1": True, "player2": True}
 teleportation_start_time = {"player1": 0, "player2": 0}
 
