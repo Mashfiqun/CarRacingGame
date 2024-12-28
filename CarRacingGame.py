@@ -14,14 +14,14 @@ WIN = 2
 
 current_state = MENU
 
-player1_position = [0, -190]
-player1_angle = 0
+player1_position = [-370, -15]
+player1_angle = 270
 player1_speed = 2.0
 player1_original_speed = player1_speed
 player1_debuff = False
 
-player2_position = [0, -220]
-player2_angle = 0
+player2_position = [-320, -15]
+player2_angle = 270
 player2_speed = 2.0
 player2_original_speed = player2_speed
 player2_debuff = False
@@ -73,15 +73,17 @@ def check_lap_completion():
 
     if -400 <= player1_position[0] <= -300 and -crossing_threshold <= player1_position[1] <= crossing_threshold:
         if current_time - player1_crossing_cooldown > cooldown_duration:
+            print(f"Player 1 completed lap {player1_laps}")
             player1_laps += 1
             player1_crossing_cooldown = current_time
-            print(f"Player 1 completed lap {player1_laps}")
+            
 
     if -400 <= player2_position[0] <= -300 and -crossing_threshold <= player2_position[1] <= crossing_threshold:
         if current_time - player2_crossing_cooldown > cooldown_duration:
+            print(f"Player 2 completed lap {player2_laps}")
             player2_laps += 1
             player2_crossing_cooldown = current_time
-            print(f"Player 2 completed lap {player2_laps}")
+            
 
     if player1_laps > MAX_LAPS:
         return "Player 1 Wins!"
@@ -400,8 +402,10 @@ def display():
         draw_obstacles() 
         draw_scores()
         draw_debuffs()
-        draw_teleportation_timer("player1", teleportation_available["player1"], teleportation_start_time["player1"])
-        draw_teleportation_timer("player2", teleportation_available["player2"], teleportation_start_time["player2"])
+        if not teleportation_available["player1"]:
+            draw_teleportation_timer("player1", teleportation_available["player1"], teleportation_start_time["player1"])
+        if not teleportation_available["player2"]:
+            draw_teleportation_timer("player2", teleportation_available["player2"], teleportation_start_time["player2"])
     elif current_state == WIN:
         draw_winner()
 
@@ -482,20 +486,28 @@ def mouse_button(button, state, x, y):
 
 def reset_game():
     global player1_position, player1_angle, player1_speed, player1_laps
-    global player2_position, player2_angle, player2_speed, player2_laps
-    player1_position = [0, -190]
-    player1_angle = 0
+    global player2_position, player2_angle, player2_speed, player2_laps, teleportation_available, teleportation_start_time
+    player1_position = [-370, -15]
+    player1_angle = 270
     player1_speed = player1_original_speed
     player1_laps = 1
 
-    player2_position = [0, -220]
-    player2_angle = 0
+    player2_position = [-320, -15]
+    player2_angle = 270
     player2_speed = player2_original_speed
     player2_laps = 1
 
     power_ups.clear()
     power_up_times["player1"] = 0
     power_up_times["player2"] = 0
+
+    debuffs.clear()
+    debuff_times["player1"] = 0
+    debuff_times["player2"] = 0
+
+    obstacles.clear()
+    teleportation_available = {"player1": True, "player2": True}
+    teleportation_start_time = {"player1": 0, "player2": 0}
 
 def keyboard(key, x, y):
     keys[key] = True
