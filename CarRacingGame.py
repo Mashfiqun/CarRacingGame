@@ -444,7 +444,7 @@ def draw_teleportation_timer(player_name, is_available, start_time):
         remaining_time = TELEPORTATION_COOLDOWN - (current_time - start_time)
         if remaining_time > 0:
             glColor3f(0, 0, 1) 
-            position = (50 if player_name == "player1" else -150, 220) 
+            position = (50 if player_name == "player1" else -200, 220) 
             glRasterPos2f(position[0], position[1])
             for char in f"{player_name.capitalize()} Teleport: {remaining_time:.1f}s":
                 glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
