@@ -193,3 +193,180 @@ def convert_coordinate(x, y):
     a = x - window_width // 2
     b = window_height // 2 - y
     return a, b
+
+def generate_track():
+    glColor3f(1, 1, 1)
+    for i in range(len(track_outer)):
+        x1, y1 = track_outer[i]
+        x2, y2 = track_outer[(i + 1) % len(track_outer)]
+        draw_line_midpoint(x1, y1, x2, y2)
+
+    for i in range(len(track_inner)):
+        x1, y1 = track_inner[i]
+        x2, y2 = track_inner[(i + 1) % len(track_inner)]
+        draw_line_midpoint(x1, y1, x2, y2)
+
+def is_within_boundaries(position):
+    x, y = position
+    outer_bound = (-390 <= x <= 390) and (-250 <= y <= 250)
+    inner_bound = (-300 <= x <= 300) and (-160 <= y <= 160)
+    return outer_bound and not inner_bound
+
+def spawn_debuff(car_position):
+    global debuffs
+    debuffs.append((car_position[0] + random.randint(-20, 20), car_position[1] + random.randint(-20, 20)))
+
+def check_debuff(player_position, player_name):
+    global debuff_times, player1_speed, player2_speed, debuffs
+    current_time = time.time()
+    
+
+    for (x, y) in debuffs:
+        distance = math.sqrt((player_position[0] - x) ** 2 + (player_position[1] - y) ** 2)
+        if distance < 10:
+            debuffs.remove((x, y))
+            debuff_times[player_name] = current_time
+            if player_name == "player1":
+                player1_speed = player1_original_speed / 2 
+            else:
+                player2_speed = player2_original_speed / 2  
+            return True
+    return False
+
+def keyboardListener(key, x, y):
+    global player1_position, player1_angle, player1_speed, player1_laps
+    global player2_position, player2_angle, player2_speed, player2_laps
+    global player1_original_speed, player2_original_speed, current_state
+    if key == b'w':
+        player1_position[0] += player1_speed * math.cos(math.radians(player1_angle))
+        player1_position[1] += player1_speed * math.sin(math.radians(player1_angle))
+    if key == b's':
+        player1_position[0] -= player1_speed * math.cos(math.radians(player1_angle))
+        player1_position[1] -= player1_speed * math.sin(math.radians(player1_angle))
+    if key == b'a':
+        player1_angle += 5
+    if key == b'd':
+        player1_angle -= 5
+    if key == b'\x1b':
+        current_state = MENU
+        return
+    
+def specialKeyListener(key, x, y):
+    global player1_position, player1_angle, player1_speed, player1_laps
+    global player2_position, player2_angle, player2_speed, player2_laps
+    global player1_original_speed, player2_original_speed, current_state
+    if key == GLUT_KEY_UP:
+        player2_position[0] += player2_speed * math.cos(math.radians(player2_angle))
+        player2_position[1] += player2_speed * math.sin(math.radians(player2_angle))
+    if key == GLUT_KEY_DOWN:
+        player2_position[0] -= player2_speed * math.cos(math.radians(player2_angle))
+        player2_position[1] -= player2_speed * math.sin(math.radians(player2_angle))
+    if key == GLUT_KEY_LEFT:
+        player2_angle += 5
+    if key == GLUT_KEY_RIGHT:
+        player2_angle -= 5
+
+def check_collision(pos1, pos2):
+    distance = math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
+    return distance < 20
+
+def check_lap_completion():
+    global player1_laps, player2_laps
+    crossing_threshold = 5
+    global player1_crossing_cooldown, player2_crossing_cooldown
+
+    current_time = time.time()
+    cooldown_duration = 5
+
+    if -400 <= player1_position[0] <= -300 and -crossing_threshold <= player1_position[1] <= crossing_threshold:
+        if current_time - player1_crossing_cooldown > cooldown_duration:
+            player1_laps += 1
+            player1_crossing_cooldown = current_time
+            print(f"Player 1 completed lap {player1_laps}")
+
+    if -400 <= player2_position[0] <= -300 and -crossing_threshold <= player2_position[1] <= crossing_threshold:
+        if current_time - player2_crossing_cooldown > cooldown_duration:
+            player2_laps += 1
+            player2_crossing_cooldown = current_time
+            print(f"Player 2 completed lap {player2_laps}")
+
+    if player1_laps > MAX_LAPS:
+        return "Player 1 Wins!"
+    elif player2_laps > MAX_LAPS:
+        return "Player 2 Wins!"
+    return None
+
+def mouse_button(button, state, x, y):
+    global current_state 
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+
+        if current_state == MENU or current_state == WIN:
+            
+            x, y = convert_coordinate(x, y)
+            print(x, y)
+            if -70 < x < 70 and -10 < y < 30: 
+                current_state = GAME
+                print("Game Started")
+                reset_game()
+            elif -70 < x < 70 and -50 < y < -10:
+                print("Game Exited")
+                glutDestroyWindow(window)
+
+def display():
+    global current_state
+    glClear(GL_COLOR_BUFFER_BIT)
+    if current_state == MENU:
+        draw_menu()
+    elif current_state == GAME:
+        generate_track()
+        draw_start_finish_line()
+        draw_car(player1_position[0], player1_position[1], player1_angle, (1, 0, 0))
+        draw_car(player2_position[0], player2_position[1], player2_angle, (0, 0, 1))
+        draw_power_ups()
+        draw_obstacles() 
+        draw_scores()
+        draw_debuffs()
+        draw_teleportation_timer("player1", teleportation_available["player1"], teleportation_start_time["player1"])
+        draw_teleportation_timer("player2", teleportation_available["player2"], teleportation_start_time["player2"])
+    elif current_state == WIN:
+        draw_winner()
+
+    glutSwapBuffers()
+
+def keyboard(key, x, y):
+    keys[key] = True
+
+def keyboard_up(key, x, y):
+    keys[key] = False
+
+def special_keys(key, x, y):
+    keys[key] = True
+
+def special_keys_up(key, x, y):
+    keys[key] = False
+
+def idle():
+    update_player()
+    glutPostRedisplay()
+
+glutInit()
+glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
+glutInitWindowSize(window_width, window_height)
+window = glutCreateWindow(b'Car Racing Game')
+
+glMatrixMode(GL_PROJECTION)
+glLoadIdentity()
+glOrtho(-400, 400, -300, 300, -1, 1)
+
+glutDisplayFunc(display)
+glutIdleFunc(idle)
+glutKeyboardFunc(keyboard)
+glutKeyboardUpFunc(keyboard_up)
+glutSpecialFunc(special_keys)
+glutSpecialUpFunc(special_keys_up)
+glutMouseFunc(mouse_button)
+
+glutTimerFunc(POWER_UP_INTERVAL, generate_power_up, 0)
+glutTimerFunc(OBSTACLE_INTERVAL, generate_obstacle, 0)
+
+glutMainLoop()
