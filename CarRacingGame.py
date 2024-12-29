@@ -382,6 +382,8 @@ def update_player():
         if keys.get(b'n', False) and not player2_debuff:
             spawn_debuff(player2_position, "player2")
             player2_debuff = True
+        elif not keys.get(b'n', False):
+            player2_debuff = False
         if keys.get(b'm'): 
             teleport_player("player2")
 
