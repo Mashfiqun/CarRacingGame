@@ -91,26 +91,67 @@ def check_lap_completion():
         return "Player 2 Wins!"
     return None
 
-def draw_line_midpoint(x1, y1, x2, y2):
-    dx = abs(x2 - x1)
-    dy = abs(y2 - y1)
-    sx = 1 if x1 < x2 else -1
-    sy = 1 if y1 < y2 else -1
-    err = dx - dy
+def plotting(x, y):
 
     glBegin(GL_POINTS)
-    while True:
-        glVertex2f(x1, y1)
-        if x1 == x2 and y1 == y2:
-            break
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x1 += sx
-        if e2 < dx:
-            err += dx
-            y1 += sy
+    glVertex2f(x, y)
     glEnd()
+
+
+def move_to_0(x, y, zone):
+    zone_map = {0: (x, y),1: (y, x),2: (y, -x),3: (-x, y),4: (-x, -y),5: (-y, -x),6: (-y, x),7: (x, -y)}
+    return zone_map[zone]
+
+
+def move_from_0(x, y, zone):
+    zone_map = {0: (x, y),1: (y, x),2: (-y, x),3: (-x, y),4: (-x, -y),5: (-y, -x),6: (y, -x),7: (x, -y)
+}
+    return zone_map[zone]
+
+
+def draw_line_midpoint(x0, y0, x1, y1):
+    dx= x1 - x0
+    dy= y1 - y0
+    zone = 0
+    if abs(dx) > abs(dy):
+        if dx>=0 and dy>=0:
+            zone= 0
+        elif dx<0 and dy>=0:
+            zone= 3
+        elif dx< 0 and dy < 0:
+            zone= 4
+        elif dx>= 0 and dy < 0:
+            zone= 7
+    else:
+        if dx>=0 and dy>= 0:
+            zone=1
+        elif dx<0 and dy>= 0:
+            zone= 2
+        elif dx<0 and dy< 0:
+            zone = 5
+        elif dx>= 0 and dy< 0:
+            zone= 6
+
+    x0, y0 = move_to_0(x0, y0, zone)
+    x1, y1 = move_to_0(x1, y1, zone)
+    dx = x1 - x0
+    dy = y1 - y0
+    d = 2 * dy - dx
+    incrE = 2 * dy
+    incrNE = 2 * (dy - dx)
+    x, y = x0, y0
+    x3, y3 = move_from_0(x, y, zone)
+    plotting(x3, y3)
+    while x < x1:
+        if d <= 0:
+            d += incrE
+            x += 1
+        else:
+            d += incrNE
+            x += 1
+            y += 1
+        x3, y3 = move_from_0(x, y, zone)
+        plotting(x3, y3)
 
 def draw_circle_midpoint(xc, yc, radius):
     x = 0
