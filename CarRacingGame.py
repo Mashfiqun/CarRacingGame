@@ -440,7 +440,7 @@ def display():
         generate_track()
         draw_start_finish_line()
         draw_car(player1_position[0], player1_position[1], player1_angle, (1, 0, 0))
-        draw_car(player2_position[0], player2_position[1], player2_angle, (0, 0, 1))
+        draw_car(player2_position[0], player2_position[1], player2_angle, (0.55, 0.8, 0.95))
         draw_power_ups()
         draw_obstacles() 
         draw_scores()
@@ -518,7 +518,7 @@ def mouse_button(button, state, x, y):
         if current_state == MENU or current_state == WIN:
             
             x, y = convert_coordinate(x, y)
-            print(x, y)
+
             if -70 < x < 70 and -10 < y < 30: 
                 current_state = GAME
                 print("Game Started")
