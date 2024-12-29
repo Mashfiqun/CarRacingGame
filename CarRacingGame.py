@@ -293,7 +293,7 @@ def specialKeyListener(key, x, y):
     if key == GLUT_KEY_RIGHT:
         player2_angle -= 5
 def generate_obstacle(value):
-    if len(obstacles) < MAX_POWER_UPS:
+    if len(obstacles) < 10:
         x = random.randint(-390, 390)
         y = random.randint(-250, 250)
         while not is_within_boundaries([x, y]):
